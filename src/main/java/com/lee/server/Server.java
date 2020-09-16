@@ -5,7 +5,9 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +41,16 @@ public class Server {
                 System.out.println("有一个客户端连接了");
                 TimeUnit.SECONDS.sleep(1);
                 httpExchange.sendResponseHeaders(200, 0);
+                PrintWriter printWriter = new PrintWriter(httpExchange.getResponseBody());
+                Scanner sc = new Scanner(System.in);
+                String line;
+                while (sc.hasNextLine()) {
+                    line = sc.nextLine();
+                    if ("q".equals(line)) break;
+                    printWriter.write(line);
+                }
+                printWriter.flush();
+                httpExchange.close();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
