@@ -22,7 +22,7 @@ public class Server {
         try {
             // 利用线程池加快并发情况下的响应速度
             ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-            server = HttpServer.create(new InetSocketAddress("localhost", 8081), 0);
+            server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8081), 0);
             server.createContext("/", new MyHttpHandler());
             server.setExecutor(threadPoolExecutor);
             server.start();
