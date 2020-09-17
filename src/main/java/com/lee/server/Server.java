@@ -25,14 +25,14 @@ import java.util.concurrent.TimeUnit;
  * 监听8081端口，处理接收到的所有请求，均返回200状态码
  */
 public class Server {
-    private static Logger logger = LoggerFactory.getLogger(Server.class);
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) {
         HttpServer server;
         try {
             // 利用线程池加快并发情况下的响应速度
-            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-            server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8081), 0);
+            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
+            server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8081), 10);
             server.createContext("/", new MyHttpHandler());
             server.setExecutor(threadPoolExecutor);
             server.start();
@@ -46,9 +46,8 @@ public class Server {
         @Override
         public void handle(HttpExchange httpExchange) {
             try {
-                TimeUnit.SECONDS.sleep(0);
                 logger.info("有一个客户端连接了");
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.SECONDS.sleep(1);
                 httpExchange.sendResponseHeaders(200, 10);
                 System.out.println(httpExchange.getRequestURI().getPath());
                 System.out.println(httpExchange.getRequestURI().getQuery());

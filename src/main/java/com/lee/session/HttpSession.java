@@ -86,4 +86,11 @@ public class HttpSession implements Session {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "HttpSession{" +
+                "id='" + id + '\'' +
+                '}';
+    }
 }

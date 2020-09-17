@@ -4,6 +4,7 @@ import com.lee.session.HttpSession;
 import com.lee.session.Session;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 
 /**
  * Author: Lzj
@@ -11,18 +12,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * Description:
  */
 public class Client {
-    private static ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
-    public static void main(String[] args) throws InterruptedException {
-        HttpSession httpSession = new HttpSession("rinima");
-        HttpSession httpSession2 = new HttpSession("rinima2");
-        String start = httpSession.start();
-        sessions.put(start, httpSession);
-        String stop = httpSession.stop();
-        sessions.remove(stop);
-        String start2 = httpSession2.start();
-        sessions.put(start2, httpSession2);
-        String stop2 = httpSession2.stop();
-        sessions.remove(stop2);
+    public static void main(String[] args) {
+        // 多线程发起请求
+        for (int i = 0; i < 20; i++) {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                HttpSession httpSession = new HttpSession("rinima" + 1);
+                String start = httpSession.start();
+                sessions.put(start, httpSession);
+                String stop = httpSession.stop();
+                sessions.remove(stop);
+            });
+        }
+        System.out.println(sessions);
     }
 }
