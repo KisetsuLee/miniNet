@@ -1,13 +1,17 @@
 package com.lee.server;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.util.Scanner;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -36,22 +40,29 @@ public class Server {
 
     private static class MyHttpHandler implements HttpHandler {
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
+        public void handle(HttpExchange httpExchange) {
             try {
+                TimeUnit.SECONDS.sleep(0);
                 System.out.println("有一个客户端连接了");
-                TimeUnit.SECONDS.sleep(1);
                 httpExchange.sendResponseHeaders(200, 0);
-                PrintWriter printWriter = new PrintWriter(httpExchange.getResponseBody());
-                Scanner sc = new Scanner(System.in);
-                String line;
-                while (sc.hasNextLine()) {
-                    line = sc.nextLine();
-                    if ("q".equals(line)) break;
-                    printWriter.write(line);
+                System.out.println(httpExchange.getRequestURI().getPath());
+                System.out.println(httpExchange.getRequestURI().getQuery());
+                if ("POST".equals(httpExchange.getRequestMethod())) {
+                    InputStream requestBody = httpExchange.getRequestBody();
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(requestBody));
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    System.out.println(sb);
                 }
-                printWriter.flush();
+                Headers requestHeaders = httpExchange.getRequestHeaders();
+                for (Map.Entry<String, List<String>> stringListEntry : requestHeaders.entrySet()) {
+                    System.out.println(stringListEntry.getKey() + " " + stringListEntry.getValue());
+                }
                 httpExchange.close();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
         }

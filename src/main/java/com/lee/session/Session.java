@@ -8,11 +8,13 @@ package com.lee.session;
 public interface Session {
     /**
      * 发送start请求给服务器,收到响应后，开始session，
+     * @return
      */
-    void start();
+    String start();
 
     /**
      * 发送stop请求给服务器,收到响应后，关闭session
+     * @return
      */
-    void stop();
+    String stop();
 }
