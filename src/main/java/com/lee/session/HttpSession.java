@@ -9,6 +9,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -18,6 +20,8 @@ import java.io.IOException;
  * Description:
  */
 public class HttpSession implements Session {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private String id;
     private BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
 
@@ -44,7 +48,7 @@ public class HttpSession implements Session {
             post.setHeader("Content-type", "application/json");
             post.setEntity(entity);
             CloseableHttpResponse execute = getHttpClient().execute(post);
-            System.out.println(execute.getStatusLine());
+            logger.trace("收到的响应头：{}", execute.getStatusLine());
             if (execute.getStatusLine().getStatusCode() == 200) {
                 execute.close();
                 return id;
@@ -71,7 +75,7 @@ public class HttpSession implements Session {
             post.setHeader("Content-type", "application/json");
             post.setEntity(entity);
             CloseableHttpResponse execute = getHttpClient().execute(post);
-            System.out.println(execute.getStatusLine());
+            logger.trace("收到的响应头：{}", execute.getStatusLine());
             if (execute.getStatusLine().getStatusCode() == 200) {
                 execute.close();
                 return id;

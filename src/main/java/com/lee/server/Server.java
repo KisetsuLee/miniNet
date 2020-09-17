@@ -4,6 +4,8 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +25,8 @@ import java.util.concurrent.TimeUnit;
  * 监听8081端口，处理接收到的所有请求，均返回200状态码
  */
 public class Server {
+    private static Logger logger = LoggerFactory.getLogger(Server.class);
+
     public static void main(String[] args) {
         HttpServer server;
         try {
@@ -32,7 +36,7 @@ public class Server {
             server.createContext("/", new MyHttpHandler());
             server.setExecutor(threadPoolExecutor);
             server.start();
-            System.out.println(" Server started on port 8081");
+            logger.debug("Server started on port 8081");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,8 +47,9 @@ public class Server {
         public void handle(HttpExchange httpExchange) {
             try {
                 TimeUnit.SECONDS.sleep(0);
-                System.out.println("有一个客户端连接了");
-                httpExchange.sendResponseHeaders(200, 0);
+                logger.info("有一个客户端连接了");
+                TimeUnit.SECONDS.sleep(5);
+                httpExchange.sendResponseHeaders(200, 10);
                 System.out.println(httpExchange.getRequestURI().getPath());
                 System.out.println(httpExchange.getRequestURI().getQuery());
                 if ("POST".equals(httpExchange.getRequestMethod())) {
@@ -55,11 +60,11 @@ public class Server {
                     while ((line = reader.readLine()) != null) {
                         sb.append(line);
                     }
-                    System.out.println(sb);
+                    logger.trace("{}", sb);
                 }
                 Headers requestHeaders = httpExchange.getRequestHeaders();
                 for (Map.Entry<String, List<String>> stringListEntry : requestHeaders.entrySet()) {
-                    System.out.println(stringListEntry.getKey() + " " + stringListEntry.getValue());
+                    logger.info(stringListEntry.getKey() + " " + stringListEntry.getValue());
                 }
                 httpExchange.close();
             } catch (InterruptedException | IOException e) {

@@ -15,15 +15,14 @@ public class Client {
 
     public static void main(String[] args) throws InterruptedException {
         HttpSession httpSession = new HttpSession("rinima");
+        HttpSession httpSession2 = new HttpSession("rinima2");
         String start = httpSession.start();
-        if (start != null) {
-            sessions.put(start, httpSession);
-        }
-        System.out.println(sessions.size());
+        sessions.put(start, httpSession);
         String stop = httpSession.stop();
-        if (stop != null) {
-            sessions.remove(stop);
-        }
-        System.out.println(sessions.size());
+        sessions.remove(stop);
+        String start2 = httpSession2.start();
+        sessions.put(start2, httpSession2);
+        String stop2 = httpSession2.stop();
+        sessions.remove(stop2);
     }
 }
