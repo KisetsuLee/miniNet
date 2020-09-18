@@ -41,22 +41,15 @@ public class HttpSession implements Session {
     }
 
     @Override
-    public void run() {
-        start();
+    public void start() {
+        service.startSession(this);
+        sessionManager.addSession(this);
     }
 
     @Override
-    public String start() {
-        String sessionId = service.startSession(id, this);
-        sessionManager.addSession(sessionId, this);
-        return sessionId;
-    }
-
-    @Override
-    public String stop() {
-        String sessionId = service.stopSession(id, this);
-        sessionManager.removeSession(sessionId);
-        return sessionId;
+    public void stop() {
+        service.stopSession(this);
+        sessionManager.deleteSession(this);
     }
 
     @Override

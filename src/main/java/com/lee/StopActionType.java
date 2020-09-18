@@ -42,7 +42,7 @@ public class StopActionType implements ActionTypeAdapter {
             if (execute.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("删除Session失败");
             }
-            logger.trace("删除session - 收到的响应头：{}", execute.getStatusLine());
+            logger.trace("删除session" + httpSession.getId() + " - 收到的响应头：{}", execute.getStatusLine());
             execute.close();
             return String.valueOf(id);
         } catch (IOException e) {

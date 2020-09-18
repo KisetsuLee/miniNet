@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private static AtomicInteger count = new AtomicInteger(1);
+    private static final AtomicInteger count = new AtomicInteger(1);
 
     public static void main(String[] args) {
         HttpServer server;

@@ -13,11 +13,13 @@ import java.util.concurrent.TimeUnit;
 public class Client {
     public static void main(String[] args) throws InterruptedException {
         SessionManager sessionManager = Managers.newFixedSessionManager(10);
+        sessionManager.setConcurrency(20);
         // 多线程发起请求
         for (int i = 0; i < 20; i++) {
             sessionManager.createSession(10000 + i);
         }
         TimeUnit.SECONDS.sleep(10);
         sessionManager.removeSession("10001");
+        System.out.println(sessionManager.getSessionCount());
     }
 }

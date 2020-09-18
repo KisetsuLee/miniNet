@@ -42,7 +42,7 @@ public class StartActionType implements ActionTypeAdapter {
             if (execute.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("创建Session失败");
             }
-            logger.trace("收到的响应头：{}", execute.getStatusLine());
+            logger.trace("创建session" + httpSession.getId() + " - 收到的响应头：{}", execute.getStatusLine());
             execute.close();
             return String.valueOf(id);
         } catch (IOException e) {

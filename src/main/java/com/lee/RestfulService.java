@@ -9,11 +9,11 @@ import com.lee.session.HttpSession;
  */
 public class RestfulService {
 
-    public String startSession(String id, HttpSession httpSession) {
-        return new StartActionType("http://127.0.0.1:8081/nbi/deliverysession?id=" + id, httpSession).action();
+    public String startSession(HttpSession httpSession) {
+        return new StartActionType("http://127.0.0.1:8081/nbi/deliverysession?id=" + httpSession.getId(), httpSession).action();
     }
 
-    public String stopSession(String id, HttpSession httpSession) {
-        return new StopActionType("http://127.0.0.1:8081/nbi/deliverysession?id=" + id, httpSession).action();
+    public String stopSession(HttpSession httpSession) {
+        return new StopActionType("http://127.0.0.1:8081/nbi/deliverysession?id=" + httpSession.getId(), httpSession).action();
     }
 }

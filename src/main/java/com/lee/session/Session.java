@@ -7,7 +7,7 @@ import com.lee.SessionManager;
  * Date: 2020-09-16
  * Description:
  */
-public interface Session extends Runnable {
+public interface Session {
     // 空闲的session
     int IDLE = 0;
     // 有任务运行的session
@@ -16,16 +16,14 @@ public interface Session extends Runnable {
     /**
      * 发送start请求给服务器,收到响应后，开始session，
      *
-     * @return
      */
-    String start();
+    void start();
 
     /**
      * 发送stop请求给服务器,收到响应后，关闭session
      *
-     * @return
      */
-    String stop();
+    void stop();
 
     /**
      * 注册相应的管理器

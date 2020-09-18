@@ -11,7 +11,7 @@ import java.util.concurrent.*;
  * Description:
  */
 public class SessionManager {
-    private SessionPoolExecutor threadPool;
+    private final SessionPoolExecutor threadPool;
 
     // Session容器
     private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
@@ -27,20 +27,32 @@ public class SessionManager {
         String sessionId = String.valueOf(id);
         if (sessions.containsKey(sessionId)) throw new RuntimeException("Session id重复，创建失败");
         HttpSession httpSession = new HttpSession(sessionId, this);
-        threadPool.submit(httpSession);
+        threadPool.submit(httpSession::start);
     }
 
+    // 移除一个已经存在的session
     public void removeSession(String sessionId) {
-        sessions.remove(sessionId);
+        Session session = sessions.get(sessionId);
+        session.stop();
     }
 
+    // 设置并发数
     public void setConcurrency(int num) {
         threadPool.setCorePoolSize(num);
     }
 
-    // 防止多线程创建同一个id时发生关系
-    public void addSession(String sessionId, HttpSession httpSession) {
-        if (sessions.containsKey(sessionId)) throw new RuntimeException("Session id重复，创建失败");
-        sessions.put(sessionId, httpSession);
+    public int getSessionCount() {
+        return sessions.size();
+    }
+
+    // 添加一个session到集合里
+    public void addSession(HttpSession httpSession) {
+        if (sessions.containsKey(httpSession.getId())) throw new RuntimeException("Session id重复，创建失败");
+        sessions.put(httpSession.getId(), httpSession);
+    }
+
+    // 从集合里移除一个session
+    public void deleteSession(HttpSession httpSession) {
+        sessions.remove(httpSession.getId());
     }
 }
