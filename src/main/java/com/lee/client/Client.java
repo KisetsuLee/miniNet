@@ -1,10 +1,9 @@
 package com.lee.client;
 
-import com.lee.session.HttpSession;
-import com.lee.session.Session;
+import com.lee.SessionManager;
+import com.lee.session.Managers;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Author: Lzj
@@ -12,19 +11,13 @@ import java.util.concurrent.Executors;
  * Description:
  */
 public class Client {
-    private static final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        SessionManager sessionManager = Managers.newFixedSessionManager(10);
         // 多线程发起请求
         for (int i = 0; i < 20; i++) {
-            Executors.newSingleThreadExecutor().execute(() -> {
-                HttpSession httpSession = new HttpSession("rinima" + 1);
-                String start = httpSession.start();
-                sessions.put(start, httpSession);
-                String stop = httpSession.stop();
-                sessions.remove(stop);
-            });
+            sessionManager.createSession(10000 + i);
         }
-        System.out.println(sessions);
+        TimeUnit.SECONDS.sleep(10);
+        sessionManager.removeSession("10001");
     }
 }

@@ -17,7 +17,7 @@
             <!-- keep 30 days' worth of history capped at 3GB total size -->
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
+            <totalSizeCap>50MB</totalSizeCap>
         </rollingPolicy>
         <!-- trigger policy when send a sign to rolling policy -->
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">

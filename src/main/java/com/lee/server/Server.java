@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Author: Lzj
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
+    private static AtomicInteger count = new AtomicInteger(1);
 
     public static void main(String[] args) {
         HttpServer server;
@@ -46,11 +48,11 @@ public class Server {
         @Override
         public void handle(HttpExchange httpExchange) {
             try {
-                logger.info("有一个客户端连接了");
-                TimeUnit.SECONDS.sleep(1);
+                logger.info("有一个客户端连接了" + count.getAndIncrement());
+                TimeUnit.SECONDS.sleep(0);
                 httpExchange.sendResponseHeaders(200, 10);
-                System.out.println(httpExchange.getRequestURI().getPath());
-                System.out.println(httpExchange.getRequestURI().getQuery());
+                // System.out.println(httpExchange.getRequestURI().getPath());
+                // System.out.println(httpExchange.getRequestURI().getQuery());
                 if ("POST".equals(httpExchange.getRequestMethod())) {
                     InputStream requestBody = httpExchange.getRequestBody();
                     StringBuilder sb = new StringBuilder();
@@ -59,11 +61,11 @@ public class Server {
                     while ((line = reader.readLine()) != null) {
                         sb.append(line);
                     }
-                    logger.trace("{}", sb);
+                    // logger.trace("{}", sb);
                 }
                 Headers requestHeaders = httpExchange.getRequestHeaders();
                 for (Map.Entry<String, List<String>> stringListEntry : requestHeaders.entrySet()) {
-                    logger.info(stringListEntry.getKey() + " " + stringListEntry.getValue());
+                    // logger.info(stringListEntry.getKey() + " " + stringListEntry.getValue());
                 }
                 httpExchange.close();
             } catch (InterruptedException | IOException e) {
