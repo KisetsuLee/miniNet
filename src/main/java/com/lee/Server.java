@@ -1,6 +1,5 @@
-package com.lee.server;
+package com.lee;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -12,8 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -49,9 +46,8 @@ public class Server {
         public void handle(HttpExchange httpExchange) {
             try {
                 logger.info("有一个客户端连接了" + count.getAndIncrement());
-                TimeUnit.SECONDS.sleep(0);
+                TimeUnit.SECONDS.sleep(1);
                 httpExchange.sendResponseHeaders(200, 10);
-                // System.out.println(httpExchange.getRequestURI().getPath());
                 // System.out.println(httpExchange.getRequestURI().getQuery());
                 if ("POST".equals(httpExchange.getRequestMethod())) {
                     InputStream requestBody = httpExchange.getRequestBody();

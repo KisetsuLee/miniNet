@@ -1,6 +1,6 @@
 package com.lee.session;
 
-import com.lee.SessionManager;
+import com.lee.manager.SessionManager;
 
 /**
  * Author: Lzj

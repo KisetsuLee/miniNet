@@ -1,7 +1,7 @@
 package com.lee.session;
 
-import com.lee.RestfulService;
-import com.lee.SessionManager;
+import com.lee.api.RestfulService;
+import com.lee.manager.SessionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
@@ -17,22 +17,20 @@ import java.util.Date;
  * Description:
  */
 public class HttpSession implements Session {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     // 接口服务
-    private RestfulService service = new RestfulService();
+    private final RestfulService service = new RestfulService();
     // Session唯一id
-    private String id;
+    private final String id;
     // session的状态
     private int state;
-    // httpClient连接管理器
-    private BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
     // Session的管理器
     private SessionManager sessionManager;
     // Session过期时间(时间点)，比如，设置10秒，这个值就是当前时间+10秒后的UNIX时间
     private long expiredTime;
 
     public CloseableHttpClient getHttpClient() {
-        return HttpClients.custom().setConnectionManager(connectionManager).build();
+        return HttpClients.createDefault();
     }
 
     public HttpSession(String id) {
@@ -52,7 +50,6 @@ public class HttpSession implements Session {
     @Override
     public void stop() {
         service.stopSession(this);
-        connectionManager.close();
     }
 
     @Override

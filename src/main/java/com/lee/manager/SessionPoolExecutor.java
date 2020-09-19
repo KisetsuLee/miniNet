@@ -1,4 +1,4 @@
-package com.lee;
+package com.lee.manager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 /**
  * Author: Lzj
  * Date: 2020-09-18
- * Description:
+ * Description: 增加了错误处理
  */
 public class SessionPoolExecutor extends ThreadPoolExecutor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

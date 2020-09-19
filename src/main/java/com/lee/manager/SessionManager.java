@@ -1,4 +1,4 @@
-package com.lee;
+package com.lee.manager;
 
 import com.lee.session.HttpSession;
 import com.lee.session.Session;
@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 /**
  * Author: Lzj
  * Date: 2020-09-18
- * Description:
+ * Description: session的控制器，管理session从创建到结束的生命周期
  */
 public class SessionManager {
     private final Logger logger = LoggerFactory.getLogger(SessionManager.class);
@@ -38,39 +38,45 @@ public class SessionManager {
 
     // 创建一个新的Session
     public void createSession(long id) {
-        String sessionId = String.valueOf(id);
-        if (sessions.containsKey(sessionId)) throw new RuntimeException("Session id重复，创建失败");
-        HttpSession httpSession = new HttpSession(sessionId, this);
-        threadPool.submit(() -> {
-            httpSession.start();
-            addSession(httpSession);
-        });
+        HttpSession httpSession = checkSessionIdAndGetNewOne(id);
+        threadPool.submit(() -> newSession(httpSession));
     }
 
     // 创建一个新的Session
     public void createSession(long id, long sessionTime) {
+        HttpSession httpSession = checkSessionIdAndGetNewOne(id);
+        threadPool.submit(() -> newSession(sessionTime, httpSession));
+    }
+
+    private HttpSession checkSessionIdAndGetNewOne(long id) {
         String sessionId = String.valueOf(id);
-        if (sessions.containsKey(sessionId)) throw new RuntimeException("Session id重复，创建失败");
-        HttpSession httpSession = new HttpSession(sessionId, this);
-        threadPool.submit(() -> {
-            httpSession.start();
-            addSession(httpSession);
-            addSessionTimer(httpSession, sessionTime);
-        });
+        if (sessions.containsKey(sessionId)) throw new RuntimeException("Session" + id + " id重复，创建失败");
+        return new HttpSession(sessionId, this);
+    }
+
+    private void newSession(HttpSession httpSession) {
+        httpSession.start();
+        addSession(httpSession);
+    }
+
+    private void newSession(long sessionTime, HttpSession httpSession) {
+        httpSession.start();
+        addSession(httpSession);
+        addSessionTimer(httpSession, sessionTime);
     }
 
     // 添加一个session的Timer
     private void addSessionTimer(HttpSession httpSession, long sessionTime) {
         if (sessionTime <= 0) {
             httpSession.resetExpiredTime(0);
-            logger.info("Session{}设置为永久", httpSession.getId());
+            logger.info("Session{}设置存活时间为永久，不会被自动关闭", httpSession.getId());
             return;
         }
         httpSession.resetExpiredTime(sessionTime);
         SessionStopTask stopTask = new SessionStopTask(httpSession);
         timer.schedule(stopTask, sessionTime);
 
-        logger.info("Session{}将会在{}关闭，剩余时间{}", httpSession.getId(),
+        logger.info("Session{}设置的存活时间为{}秒，将会在{}关闭，剩余时间{}", httpSession.getId(), sessionTime / 1000,
                 httpSession.getExpiredFormatTime(), httpSession.getRemainingFormatTime());
 
         sessionStopTasks.put(httpSession.getId(), stopTask);
@@ -94,11 +100,10 @@ public class SessionManager {
 
     // 重新设置session的过期时间
     public void resetSessionExpiredTime(HttpSession session, long sessionTime) {
-        if (!sessionStopTasks.containsKey(session.getId())) {
-            throw new RuntimeException("Session" + session.getId() + "不存在");
+        if (sessionStopTasks.containsKey(session.getId())) {
+            TimerTask timerTask = sessionStopTasks.remove(session.getId());
+            timerTask.cancel();
         }
-        TimerTask timerTask = sessionStopTasks.remove(session.getId());
-        timerTask.cancel();
         logger.info("Session{}重置了过期时间", session.getId());
         addSessionTimer(session, sessionTime);
     }
@@ -117,14 +122,16 @@ public class SessionManager {
     private void addSession(Session session) {
         if (sessions.containsKey(session.getId())) throw new RuntimeException("Session id重复，创建失败");
         sessions.put(session.getId(), session);
+        logger.info("创建Session{}成功，当前存活的Session个数为{}个", session.getId(), getSessionCount());
     }
 
     // 从集合里移除一个session
     private void deleteSession(Session session) {
         sessions.remove(session.getId());
+        logger.info("删除Session{}成功，当前存活的Session个数为{}个", session.getId(), getSessionCount());
     }
 
-    // stop session的定时器任务
+    // stop session的定时器任务class
     private class SessionStopTask extends TimerTask {
         private final Session session;
 
@@ -134,10 +141,19 @@ public class SessionManager {
 
         @Override
         public void run() {
+            logger.info("Session{}存活时间到期，将会被自动删除", session.getId());
             SessionManager.this.removeSession(session.getId());
             SessionManager.this.sessionStopTasks.remove(session.getId());
-            logger.info("sessions数量为：{}", SessionManager.this.sessions.size());
-            logger.info("sessionTimers数量为：{}", SessionManager.this.sessionStopTasks.size());
         }
     }
+
+    // 关闭session管理器，结束掉所有的session，调用正常的stop方法
+    public void shutdown() {
+        logger.info("sessionManager即将关闭");
+        timer.cancel();
+        sessionStopTasks.clear();
+        sessions.forEach((k, v) -> threadPool.submit(() -> removeSession(k)));
+        threadPool.shutdown();
+    }
+
 }

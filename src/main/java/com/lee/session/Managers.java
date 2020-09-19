@@ -1,7 +1,7 @@
 package com.lee.session;
 
-import com.lee.SessionManager;
-import com.lee.SessionRejectHandler;
+import com.lee.manager.SessionManager;
+import com.lee.manager.SessionRejectHandler;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;

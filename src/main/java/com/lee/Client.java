@@ -1,6 +1,6 @@
-package com.lee.client;
+package com.lee;
 
-import com.lee.SessionManager;
+import com.lee.manager.SessionManager;
 import com.lee.session.Managers;
 
 import java.util.concurrent.TimeUnit;
@@ -20,5 +20,7 @@ public class Client {
         }
         TimeUnit.SECONDS.sleep(3);
         sessionManager.resetSessionExpiredTime("10020", -1);
+        TimeUnit.SECONDS.sleep(3);
+        sessionManager.shutdown();
     }
 }
