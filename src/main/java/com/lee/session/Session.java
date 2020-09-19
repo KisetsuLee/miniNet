@@ -32,4 +32,10 @@ public interface Session {
      */
     void registerManager(SessionManager sessionManager);
 
+    /**
+     * 获取session的id
+     * @return
+     */
+    String getId();
+
 }

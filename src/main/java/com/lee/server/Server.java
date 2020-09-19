@@ -33,7 +33,7 @@ public class Server {
         HttpServer server;
         try {
             // 利用线程池加快并发情况下的响应速度
-            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
+            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(100);
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8081), 10);
             server.createContext("/", new MyHttpHandler());
             server.setExecutor(threadPoolExecutor);
@@ -62,10 +62,6 @@ public class Server {
                         sb.append(line);
                     }
                     // logger.trace("{}", sb);
-                }
-                Headers requestHeaders = httpExchange.getRequestHeaders();
-                for (Map.Entry<String, List<String>> stringListEntry : requestHeaders.entrySet()) {
-                    // logger.info(stringListEntry.getKey() + " " + stringListEntry.getValue());
                 }
                 httpExchange.close();
             } catch (InterruptedException | IOException e) {

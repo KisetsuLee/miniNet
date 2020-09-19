@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
  */
 public class HttpSession implements Session {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     // 接口服务
     private RestfulService service = new RestfulService();
     // Session唯一id
@@ -43,13 +42,12 @@ public class HttpSession implements Session {
     @Override
     public void start() {
         service.startSession(this);
-        sessionManager.addSession(this);
     }
 
     @Override
     public void stop() {
         service.stopSession(this);
-        sessionManager.deleteSession(this);
+        connectionManager.close();
     }
 
     @Override

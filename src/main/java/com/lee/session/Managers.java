@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Description:
  */
 public class Managers {
-    // Session队列大小
+    // Session并发池排队队列大小
     private static int queueSize = 5;
 
     // 线程池工厂方法
@@ -35,7 +35,7 @@ public class Managers {
         SessionThreadFactory() {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = "sessionManager-" + "http" + "-thread-";
+            namePrefix = "session-" + "01" + "-thread-";
         }
 
         public Thread newThread(Runnable r) {
