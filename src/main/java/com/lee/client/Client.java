@@ -15,11 +15,10 @@ public class Client {
         SessionManager sessionManager = Managers.newFixedSessionManager(10);
         sessionManager.setConcurrency(20);
         // 多线程发起请求
-        for (int i = 0; i < 20; i++) {
-            sessionManager.createSession(10000 + i);
+        for (int i = 1; i <= 20; i++) {
+            sessionManager.createSession(10000 + i, i * 1000);
         }
-        TimeUnit.SECONDS.sleep(10);
-        sessionManager.removeSession("10001");
-        System.out.println(sessionManager.getSessionCount());
+        TimeUnit.SECONDS.sleep(3);
+        sessionManager.resetSessionExpiredTime("10020", -1);
     }
 }

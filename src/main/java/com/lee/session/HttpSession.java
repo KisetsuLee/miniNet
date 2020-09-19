@@ -8,6 +8,9 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Author: Lzj
  * Date: 2020-09-17
@@ -25,6 +28,8 @@ public class HttpSession implements Session {
     private BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
     // Session的管理器
     private SessionManager sessionManager;
+    // Session过期时间(时间点)，比如，设置10秒，这个值就是当前时间+10秒后的UNIX时间
+    private long expiredTime;
 
     public CloseableHttpClient getHttpClient() {
         return HttpClients.custom().setConnectionManager(connectionManager).build();
@@ -55,8 +60,26 @@ public class HttpSession implements Session {
         this.sessionManager = sessionManager;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    public long getExpiredTime() {
+        return expiredTime;
+    }
+
+    public String getExpiredFormatTime() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                .format(new Date(expiredTime));
+    }
+
+    public String getRemainingFormatTime() {
+        return (getExpiredTime() - System.currentTimeMillis()) / 1000 / 60 + "分" +
+                (getExpiredTime() - System.currentTimeMillis()) / 1000 % 60 + "秒";
+    }
+
+    public void resetExpiredTime(long sessionTime) {
+        this.expiredTime = System.currentTimeMillis() + sessionTime;
+    }
 }
