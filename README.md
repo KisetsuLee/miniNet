@@ -1,6 +1,3 @@
----
-typora-copy-images-to: images
----
 
 # Session控制器
 
