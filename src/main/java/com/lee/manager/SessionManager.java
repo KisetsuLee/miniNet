@@ -43,9 +43,9 @@ public class SessionManager {
     }
 
     // 创建一个新的Session
-    public void createSession(long id, long sessionTime) {
+    public Future<?> createSession(long id, long sessionTime) {
         HttpSession httpSession = checkSessionIdAndGetNewOne(id);
-        threadPool.submit(() -> newSession(sessionTime, httpSession));
+        return threadPool.submit(() -> newSession(sessionTime, httpSession));
     }
 
     private HttpSession checkSessionIdAndGetNewOne(long id) {

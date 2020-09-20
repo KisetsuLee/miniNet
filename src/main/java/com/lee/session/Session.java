@@ -28,7 +28,6 @@ public interface Session {
     /**
      * 注册相应的管理器
      *
-     * @param sessionManager
      */
     void registerManager(SessionManager sessionManager);
 
