@@ -18,7 +18,7 @@ public class Client {
         for (int i = 1; i <= 20; i++) {
             sessionManager.createSession(10000 + i, i * 1000);
         }
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(60);
         sessionManager.resetSessionExpiredTime("10020", -1);
         TimeUnit.SECONDS.sleep(3);
         sessionManager.shutdown();

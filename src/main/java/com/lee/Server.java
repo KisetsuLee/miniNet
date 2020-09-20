@@ -1,5 +1,8 @@
 package com.lee;
 
+import com.alibaba.fastjson.JSON;
+import com.lee.generate.ActionType;
+import com.lee.generate.DeliverySessionCreationType;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -30,12 +33,12 @@ public class Server {
         HttpServer server;
         try {
             // 利用线程池加快并发情况下的响应速度
-            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(100);
+            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8081), 10);
             server.createContext("/", new MyHttpHandler());
             server.setExecutor(threadPoolExecutor);
             server.start();
-            logger.debug("Server started on port 8081");
+            logger.info("Server started on port 8081");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,24 +48,33 @@ public class Server {
         @Override
         public void handle(HttpExchange httpExchange) {
             try {
-                logger.info("有一个客户端连接了" + count.getAndIncrement());
                 TimeUnit.SECONDS.sleep(1);
-                httpExchange.sendResponseHeaders(200, 10);
-                // System.out.println(httpExchange.getRequestURI().getQuery());
                 if ("POST".equals(httpExchange.getRequestMethod())) {
-                    InputStream requestBody = httpExchange.getRequestBody();
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(requestBody));
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line);
+                    DeliverySessionCreationType requestBody = getRequestBody(httpExchange);
+                    if (requestBody.getAction().equals(ActionType.START)) {
+                        logger.info("[Session{}] - 连接，当前Session - [{}]个", requestBody.getDeliverySessionId(), count.getAndIncrement());
+                    } else if (requestBody.getAction().equals(ActionType.STOP)) {
+                        logger.info("[Session{}] - 断开，服务器当前Session - [{}]个", requestBody.getDeliverySessionId(), count.getAndIncrement());
                     }
-                    // logger.trace("{}", sb);
+                    httpExchange.sendResponseHeaders(200, 0);
+                } else {
+                    httpExchange.sendResponseHeaders(400, 0);
                 }
                 httpExchange.close();
             } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
+                logger.error("", e);
             }
+        }
+
+        private DeliverySessionCreationType getRequestBody(HttpExchange httpExchange) throws IOException {
+            InputStream requestBody = httpExchange.getRequestBody();
+            StringBuilder sb = new StringBuilder();
+            String line;
+            BufferedReader reader = new BufferedReader(new InputStreamReader(requestBody));
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            return JSON.parseObject(sb.toString(), DeliverySessionCreationType.class);
         }
     }
 }
