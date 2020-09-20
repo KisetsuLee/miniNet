@@ -27,7 +27,7 @@ public class HttpSession implements Session {
     // Session的管理器
     private SessionManager sessionManager;
     // Session过期时间(时间点)，比如，设置10秒，这个值就是当前时间+10秒后的UNIX时间
-    private long expiredTime;
+    private long expiredTime = -1;
 
     public CloseableHttpClient getHttpClient() {
         return HttpClients.createDefault();
@@ -67,11 +67,13 @@ public class HttpSession implements Session {
     }
 
     public String getExpiredFormatTime() {
+        if (expiredTime < 0) return "不过期";
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                 .format(new Date(expiredTime));
     }
 
     public String getRemainingFormatTime() {
+        if (expiredTime < 0) return "不过期";
         return (getExpiredTime() - System.currentTimeMillis()) / 1000 / 60 + "分" +
                 (getExpiredTime() - System.currentTimeMillis()) / 1000 % 60 + "秒";
     }

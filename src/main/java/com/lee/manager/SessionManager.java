@@ -84,7 +84,12 @@ public class SessionManager {
 
     // 移除一个已经存在的session
     public void removeSession(String sessionId) {
+        if (!sessions.containsKey(sessionId)) throw new RuntimeException("Session id不存在，删除失败");
         Session session = sessions.get(sessionId);
+        if (sessionStopTasks.containsKey(session.getId())) {
+            TimerTask timerTask = sessionStopTasks.remove(session.getId());
+            timerTask.cancel();
+        }
         session.stop();
         deleteSession(session);
     }
@@ -131,6 +136,13 @@ public class SessionManager {
         logger.info("删除Session{}成功，当前存活的Session个数为{}个", session.getId(), getSessionCount());
     }
 
+    // 打印所有session信息
+    public void getSessionsStatus() {
+        sessions.forEach((k, v) -> {
+            System.out.println("SessionId: " + v.getId() + " 过期时间: " + ((HttpSession) v).getExpiredFormatTime() + " 剩余时间：" + ((HttpSession) v).getRemainingFormatTime());
+        });
+    }
+
     // stop session的定时器任务class
     private class SessionStopTask extends TimerTask {
         private final Session session;
@@ -143,7 +155,7 @@ public class SessionManager {
         public void run() {
             logger.info("Session{}存活时间到期，将会被自动删除", session.getId());
             SessionManager.this.removeSession(session.getId());
-            SessionManager.this.sessionStopTasks.remove(session.getId());
+//            SessionManager.this.sessionStopTasks.remove(session.getId());
         }
     }
 
@@ -151,9 +163,11 @@ public class SessionManager {
     public void shutdown() {
         logger.info("sessionManager即将关闭");
         timer.cancel();
+        setConcurrency(2 * getSessionCount());
         sessionStopTasks.clear();
         sessions.forEach((k, v) -> threadPool.submit(() -> removeSession(k)));
         threadPool.shutdown();
     }
+
 
 }

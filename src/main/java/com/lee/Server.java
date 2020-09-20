@@ -27,12 +27,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private static final AtomicInteger count = new AtomicInteger(1);
+    private static final AtomicInteger count = new AtomicInteger(0);
 
     public static void main(String[] args) {
         HttpServer server;
         try {
-            // 利用线程池加快并发情况下的响应速度
             ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8081), 10);
             server.createContext("/", new MyHttpHandler());
@@ -52,9 +51,11 @@ public class Server {
                 if ("POST".equals(httpExchange.getRequestMethod())) {
                     DeliverySessionCreationType requestBody = getRequestBody(httpExchange);
                     if (requestBody.getAction().equals(ActionType.START)) {
-                        logger.info("[Session{}] - 连接，当前Session - [{}]个", requestBody.getDeliverySessionId(), count.getAndIncrement());
+                        count.getAndIncrement();
+                        logger.info("[Session{}]连接，当前Session[{}]个", requestBody.getDeliverySessionId(), count.get());
                     } else if (requestBody.getAction().equals(ActionType.STOP)) {
-                        logger.info("[Session{}] - 断开，服务器当前Session - [{}]个", requestBody.getDeliverySessionId(), count.getAndIncrement());
+                        count.getAndDecrement();
+                        logger.info("[Session{}]断开，服务器当前Session[{}]个", requestBody.getDeliverySessionId(), count.get());
                     }
                     httpExchange.sendResponseHeaders(200, 0);
                 } else {

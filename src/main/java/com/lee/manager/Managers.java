@@ -1,4 +1,4 @@
-package com.lee.session;
+package com.lee.manager;
 
 import com.lee.manager.SessionManager;
 import com.lee.manager.SessionRejectHandler;

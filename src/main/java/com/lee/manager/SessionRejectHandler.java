@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * Description:
  */
 public class SessionRejectHandler implements RejectedExecutionHandler {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void rejectedExecution(Runnable session, ThreadPoolExecutor executor) {

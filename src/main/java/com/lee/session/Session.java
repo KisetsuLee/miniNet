@@ -37,4 +37,9 @@ public interface Session {
      */
     String getId();
 
+    /**
+     * 获取session过期时间
+     * @return
+     */
+    long getExpiredTime();
 }

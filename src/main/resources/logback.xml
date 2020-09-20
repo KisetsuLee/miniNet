@@ -47,6 +47,12 @@
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
             <maxFileSize>5MB</maxFileSize>
         </triggeringPolicy>
+        <!-- 所有error日志都在这里-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{36}] - %msg%n</pattern>
         </encoder>
@@ -54,8 +60,9 @@
 
     <logger name="com.lee" level="info">
         <appender-ref ref="FILE"/>
+        <appender-ref ref="ERROR"/>
     </logger>
-    <root level="info">
+    <root level="info" additivity="false">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="ERROR"/>
     </root>
