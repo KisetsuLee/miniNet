@@ -1,7 +1,7 @@
 package com.lee;
 
-import com.lee.manager.SessionManager;
 import com.lee.manager.Managers;
+import com.lee.manager.SessionManager;
 
 import java.util.Scanner;
 
@@ -12,11 +12,11 @@ import java.util.Scanner;
  */
 public class Client {
 
-    private static final long sessionId = 100000;
+    private static long sessionId = 100000;
 
-    private static final SessionManager sessionManager = Managers.newFixedSessionManager(10);
 
     public static void main(String[] args) throws InterruptedException {
+        final SessionManager sessionManager = Managers.newFixedSessionManager(10);
         sessionManager.setConcurrency(20);
         // client进入操作
         System.out.println("请输入固定指令指令执行session操作：");
@@ -39,7 +39,7 @@ public class Client {
                         int num = Integer.parseInt(s[1]);
                         sessionManager.setConcurrency(num);
                         for (int i = 0; i < num; i++) {
-                            sessionManager.createSession(sessionId + i);
+                            sessionManager.createSession(sessionId++);
                         }
                     } else if (s.length == 3) {
                         long id = Long.parseLong(s[1]);
