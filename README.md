@@ -1,4 +1,10 @@
+---
+typora-copy-images-to: images
+---
+
 # Session控制器
+
+## 项目说明
 
 #### 基础环境 
 
@@ -8,13 +14,19 @@
 
 #### 构建项目
 
-项目拉取到本地后，进入到项目根目录，执行下面命令进行项目构建及测试运行
+项目拉取到本地后，使用IDEA打开pom文件加载为project，刷新Maven拉取对应的依赖，执行下面命令进行项目构建及测试运行
 
 ```shell
 mvn clean verify
 ```
 
+测试用例涵盖了SessionManager的公开方法，包含创建Session功能，删除Session功能，更改Session过期时间功能，批量关闭Session功能（优雅关闭）。
+
+测试基本覆盖率了SessionManager的常用功能。
+
 > 完成构建后，整个项目的环境就准备完成了，并且会在target/generated-sources/jaxb/com/lee/generate目录下根据定义的schema生成对应的Java对象
+>
+> 如果没有生成对应文件，且项目报缺少类，可以单独执行`mvn jaxb2:xjc`，生成对应文件
 
 #### 启动http服务器
 
@@ -41,7 +53,11 @@ q退出程序，退出前会将所有Session关闭
 
 > Client的操作采用命令行的输入进行操作，动态的改变Session的行为（新建，关闭）
 
-#### Session控制器操作
+#### 日志系统
+
+采用的日志框架为logback，默认会记录所有info等级的日志，并将错误日志单独放入一个日志文件中。
+
+## Session控制器操作
 
 #### 创建一个Session
 
@@ -171,3 +187,50 @@ $ q
 2020-09-20 23:15:28 [session-01-thread-6] INFO  [com.lee.manager.SessionManager] - 删除Session100000成功，当前存活的Session个数为0个
 ```
 
+## 算法说明
+
+下面时序图说明了，所有的操作都是由sessionManager发起并完成的，Session必须注册相应的sessionManager才能被管理对应的生命周期。
+
+![1600618447779](.\images\1600618447779.png)
+
+- Session缓存
+
+Session控制器本质上是一个缓存了Session的Map数据结构，每一个Session在收到服务器响应后就会被缓存至Map中，能够满足并发创建多个Session，为了保证并发的安全性，使用的数据结构是`ConcurrentHashMap`。
+
+- 过期Session的处理
+
+Session过期是由定时器触发的，定时器触发时，会向服务器发送Stop请求，并将Session从缓存Map中移除
+
+- 实现异步创建Session
+
+多线程发送请求，使用了一个自定义的线程池，继承了`ThreadPoolExecutor`，创建Session的个数和线程池的工作线程一一对应，每个线程都向服务器请求，添加任务至Map，对于设置了超时时间的任务，还会执行定时任务的设置。
+
+- 设置定时任务
+
+定时任务也会缓存在一个`ConcurrentHashMap`中，以便更好的进行修改操作
+
+定时任务使用JDK自带的Timer类实现，每一个定时任务都会被包装成`SessionManager`的内部类，设置为延时任务，并放入到Timer的任务队列中去。
+
+- 重置过期时间
+
+从定时任务的缓存中取出对应Session的定时任务，取消其执行，并替换一个成新的定时任务，重新开始计时。
+
+- 优雅关闭控制器
+
+关闭控制器的时候，很有可能Session还未过期。在关闭Session控制器的时候，首先取消掉Timer的所有未执行的任务，并且将定时任务Map中的任务全部取消，清空。再对Session缓存中的每个Session调用remove的动作，等执行线程池的`shutdown`方法，程序会在全部Session移除完成后，退出。
+
+#### 核心类
+
+下图展示了几个核心类的关系
+
+![1600621325915](.\images\1600621325915.png)
+
+- Managers是生产SessionManager的工厂方法
+- SessionManager是管理Session的核心类，里面包含了用于执行定时任务的`Timer`类，用于执行并发任务的`SessionPoolExecutor`类，还包含了两个管理Session和Session定时任务的Map容器
+- SessionPoolExecutor是用于执行任务的线程池，核心线程数大小就是并发数的大小。也自定义了拒绝策略，在有界队列满了的时候，会执行（这一点在这里也没能体现很好，因为是通过改变核心线程数来实现的并发请求，所以不会触发拒绝策略），同时重写了afterExecute方法，对线程抛出的错误进行了处理。
+- TimerTask类是用来定义定时任务的类，继承了默认的`TimerTask`类，其中包含了一个Session，用于执行Session相应的操作
+- Session接口，可以作为Session的抽象，当需要有不同Session类时，通过实现接口就可以与系统进行交互（这个特性在这个作业中体现的不是很好，并没有能做到面向接口编程）
+
+## 总结
+
+这个作业中应用线程池的特性完成了并发请求的要求，并且通过缓存Session和对应的定时任务实现了对Session生命周期的管理以及动态更改定时任务的功能，利用线程池的生命周期，实现了优雅的关闭应用。
